@@ -1,0 +1,47 @@
+name: Deploy to GitHub Pages
+
+# Publish the static game (index.html + style.css + game.js) to GitHub Pages.
+on:
+  push:
+    branches:
+      - main
+      - claude/crocodile-tooth-trap-bulwU
+  workflow_dispatch:
+
+# Permissions the GITHUB_TOKEN needs to deploy to Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one in-flight deployment; let running ones finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # enablement: true turns on Pages (source = GitHub Actions) automatically,
+      # so no manual repo-settings change is required.
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # The whole repo is the site; Jekyll's defaults ignore .git and .github.
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
