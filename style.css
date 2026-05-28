@@ -1,0 +1,360 @@
+/* ===========================================================
+   Crocodile Tooth Trap - styles
+   Plastic toy look: bright colors, chunky shapes, big shadows.
+   =========================================================== */
+
+:root {
+  --green: #38c46a;
+  --green-dark: #1f9c4d;
+  --green-darker: #157a3a;
+  --green-light: #5fe08c;
+  --mouth-red: #d33a3a;
+  --mouth-red-dark: #8c1f1f;
+  --tooth: #fdfdf5;
+  --tooth-shadow: #c9c8b3;
+  --sky-top: #8fd9ff;
+  --sky-bottom: #c9f0ff;
+  --ink: #1f3d2b;
+}
+
+* {
+  box-sizing: border-box;
+  /* Stop the 300ms tap delay and double-tap zoom on mobile */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  font-family: "Baloo 2", "Comic Sans MS", "Segoe UI", system-ui, sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
+  /* Prevent overscroll/rubber-banding so it feels app-like */
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.game {
+  min-height: 100%;
+  /* Respect notches / safe areas on phones */
+  padding: max(12px, env(safe-area-inset-top)) 12px
+    max(12px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ---------------- HUD ---------------- */
+.hud {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hud-box {
+  background: #ffffff;
+  border: 3px solid var(--green-dark);
+  border-radius: 16px;
+  padding: 6px 12px;
+  min-width: 76px;
+  text-align: center;
+  box-shadow: 0 4px 0 rgba(21, 122, 58, 0.35);
+}
+
+.hud-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--green-darker);
+}
+
+.hud-value {
+  display: block;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(18px, 5vw, 26px);
+  font-weight: 800;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 0 var(--green-darker), 0 0 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ---------------- Stage ---------------- */
+.stage {
+  width: 100%;
+  max-width: 460px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* ---------------- Crocodile ---------------- */
+.croc {
+  position: relative;
+  width: min(92vw, 420px);
+}
+
+/* The whole croc shakes when it bites */
+.croc.biting {
+  animation: shake 0.4s ease;
+}
+
+/* Eyes sit on top of the snout */
+.eyes {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  gap: 18%;
+  margin-bottom: -22px; /* tuck the eyes onto the snout */
+}
+
+.eye {
+  width: 26%;
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(circle at 50% 35%, #fff, #e7f4ec);
+  border: 5px solid var(--green-dark);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease;
+}
+
+.pupil {
+  width: 34%;
+  height: 34%;
+  background: #16241b;
+  border-radius: 50%;
+  transform: translateY(10%);
+  transition: all 0.15s ease;
+}
+
+/* Surprised eyes during the bite */
+.croc.biting .eye {
+  transform: scale(0.9);
+}
+.croc.biting .pupil {
+  width: 24%;
+  height: 24%;
+  transform: translateY(0);
+}
+
+/* The head: red interior is the open mouth */
+.jaws {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 0.92;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    var(--mouth-red) 55%,
+    var(--mouth-red-dark) 100%
+  );
+  border-radius: 46% 46% 40% 40% / 40% 40% 60% 60%;
+  overflow: hidden;
+  box-shadow: 0 14px 24px rgba(21, 60, 43, 0.25);
+}
+
+/* Shared green jaw surface */
+.upper-jaw,
+.lower-jaw {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, var(--green-light), var(--green) 55%, var(--green-dark));
+}
+
+/* Upper jaw is the snout. It grows downward to snap shut. */
+.upper-jaw {
+  top: 0;
+  height: 42%;
+  border-radius: 46% 46% 22% 22% / 80% 80% 30% 30%;
+  box-shadow: inset 0 -10px 0 rgba(0, 0, 0, 0.08);
+  /* Snappy close on bite */
+  transition: height 0.13s cubic-bezier(0.5, -0.4, 0.7, 1.3);
+  z-index: 2;
+}
+
+.croc.biting .upper-jaw {
+  height: 71%;
+}
+
+/* Lower jaw is the chin that holds the clickable teeth */
+.lower-jaw {
+  bottom: 0;
+  height: 30%;
+  border-radius: 22% 22% 46% 46% / 30% 30% 70% 70%;
+  box-shadow: inset 0 10px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* Nostrils on the snout */
+.nostrils {
+  position: absolute;
+  top: 16%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 16%;
+}
+.nostrils span {
+  width: 10px;
+  height: 14px;
+  background: var(--green-darker);
+  border-radius: 50%;
+}
+
+/* ---------------- Teeth ---------------- */
+.teeth-row {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  display: flex;
+  justify-content: center;
+  gap: 2.5%;
+}
+
+/* Upper teeth hang down from the snout (decorative) */
+.upper-teeth {
+  bottom: 0;
+  align-items: flex-start;
+}
+
+/* Lower teeth stick up from the chin (clickable buttons) */
+.lower-teeth {
+  bottom: 6%;
+  align-items: flex-end;
+  z-index: 1;
+}
+
+/* A single tooth */
+.tooth {
+  flex: 1 1 0;
+  max-width: 13%;
+  background: linear-gradient(180deg, var(--tooth), #e9e9d8);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--tooth-shadow);
+}
+
+/* Decorative upper teeth point down (triangle-ish) */
+.upper-teeth .tooth {
+  height: 38px;
+  border-radius: 6px 6px 50% 50%;
+}
+
+/* Clickable lower teeth point up, chunky and tactile */
+.lower-teeth .tooth {
+  height: 56px;
+  border-radius: 50% 50% 8px 8px;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.2s ease;
+}
+
+/* Tap / hover feedback */
+.lower-teeth .tooth:not(.pressed):active,
+.lower-teeth .tooth:not(.pressed):hover {
+  transform: translateY(3px) scale(1.03);
+  box-shadow: 0 1px 0 var(--tooth-shadow);
+}
+
+/* A pressed (safe) tooth sinks into the gum and is dimmed */
+.lower-teeth .tooth.pressed {
+  transform: translateY(34px);
+  box-shadow: none;
+  filter: brightness(0.8) saturate(0.7);
+  cursor: default;
+  animation: press 0.18s ease;
+}
+
+/* The trap tooth, revealed on game over */
+.lower-teeth .tooth.trap {
+  background: linear-gradient(180deg, #ffd34d, #ff9e2c);
+  box-shadow: 0 3px 0 #c9781b;
+}
+
+/* ---------------- Message + Replay ---------------- */
+.message {
+  margin: 0;
+  min-height: 26px;
+  font-size: clamp(16px, 4.5vw, 20px);
+  font-weight: 700;
+  text-align: center;
+  color: var(--green-darker);
+}
+
+.message.gameover {
+  color: var(--mouth-red);
+  animation: pop 0.3s ease;
+}
+
+.replay {
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(180deg, #ffb24d, #ff8c1a);
+  border: none;
+  border-radius: 18px;
+  padding: 14px 36px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #c96a10;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.replay:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #c96a10;
+}
+
+/* ---------------- Keyframe animations ---------------- */
+@keyframes shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-8px) rotate(-1.5deg); }
+  40% { transform: translateX(8px) rotate(1.5deg); }
+  60% { transform: translateX(-6px) rotate(-1deg); }
+  80% { transform: translateX(6px) rotate(1deg); }
+}
+
+@keyframes press {
+  0% { transform: translateY(0); }
+  60% { transform: translateY(40px); }
+  100% { transform: translateY(34px); }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
