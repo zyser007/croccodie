@@ -6,12 +6,26 @@
    - Tapping a safe tooth presses it down and disables it.
    - Tapping the trap tooth snaps the mouth shut -> game over.
    - "Play Again" resets the teeth and picks a new trap tooth.
+
+   The crocodile head is inline SVG (see index.html). Teeth are SVG
+   shapes generated here and laid out along the gum lines.
    =========================================================== */
 
 // --- Configuration -------------------------------------------------
 const LOWER_TEETH = 8; // clickable teeth
 const UPPER_TEETH = 8; // decorative teeth
 const BEST_KEY = "crocTrapBest"; // localStorage key for best streak
+
+// SVG geometry (matches the mouth drawn in index.html).
+const SVG_NS = "http://www.w3.org/2000/svg";
+const TEETH_LEFT = 96; // x where the first tooth sits (inset from the corner)
+const TEETH_RIGHT = 304; // x where the last tooth sits
+const UPPER_BASE_Y = 150; // upper gum line; fangs point down
+const LOWER_BASE_Y = 232; // lower gum line; fangs point up
+
+// Uneven fang heights make the croc look lifelike rather than uniform.
+const LOWER_HEIGHTS = [40, 32, 45, 36, 42, 31, 46, 35];
+const UPPER_HEIGHTS = [28, 23, 30, 25, 29, 24, 31, 26];
 
 // --- DOM references ------------------------------------------------
 const croc = document.getElementById("croc");
@@ -27,7 +41,7 @@ let trapIndex = 0; // which lower tooth is the trap
 let pressedCount = 0; // safe teeth pressed this round
 let bestScore = 0; // best streak (persisted)
 let gameOver = false;
-let toothButtons = []; // the clickable lower-tooth elements
+let toothGroups = []; // the clickable lower-tooth <g> elements
 
 // ===================================================================
 // Setup
@@ -48,25 +62,59 @@ function init() {
   startRound();
 }
 
+// Build a fang shape as an SVG <g> with a curved-sided tooth + tap target.
+function makeTooth(index, pointUp) {
+  const slot = (TEETH_RIGHT - TEETH_LEFT) / LOWER_TEETH;
+  const cx = TEETH_LEFT + slot * (index + 0.5);
+  const baseY = pointUp ? LOWER_BASE_Y : UPPER_BASE_Y;
+  const height = (pointUp ? LOWER_HEIGHTS : UPPER_HEIGHTS)[index % 8];
+  const halfWidth = slot * 0.42;
+
+  const tipY = pointUp ? baseY - height : baseY + height;
+  const midY = pointUp ? baseY - height * 0.5 : baseY + height * 0.5;
+
+  // A fang with gently curved sides (looks sharper than a plain triangle).
+  const d =
+    `M ${cx - halfWidth} ${baseY} ` +
+    `Q ${cx - halfWidth * 0.55} ${midY} ${cx} ${tipY} ` +
+    `Q ${cx + halfWidth * 0.55} ${midY} ${cx + halfWidth} ${baseY} Z`;
+
+  const group = document.createElementNS(SVG_NS, "g");
+  group.setAttribute("class", "tooth");
+  group.dataset.index = index;
+
+  const fang = document.createElementNS(SVG_NS, "path");
+  fang.setAttribute("class", "fang");
+  fang.setAttribute("d", d);
+  group.appendChild(fang);
+
+  // Invisible, generously sized hit area so taps are easy on mobile.
+  const top = Math.min(baseY, tipY) - 3;
+  const hit = document.createElementNS(SVG_NS, "rect");
+  hit.setAttribute("class", "hit");
+  hit.setAttribute("x", cx - halfWidth - 3);
+  hit.setAttribute("y", top);
+  hit.setAttribute("width", halfWidth * 2 + 6);
+  hit.setAttribute("height", height + 6);
+  group.appendChild(hit);
+
+  return group;
+}
+
 // Decorative upper teeth - not clickable
 function buildUpperTeeth() {
   for (let i = 0; i < UPPER_TEETH; i++) {
-    const tooth = document.createElement("div");
-    tooth.className = "tooth";
-    upperTeethEl.appendChild(tooth);
+    upperTeethEl.appendChild(makeTooth(i, false));
   }
 }
 
 // Clickable lower teeth - these are the buttons the player taps
 function buildLowerTeeth() {
   for (let i = 0; i < LOWER_TEETH; i++) {
-    const tooth = document.createElement("button");
-    tooth.type = "button";
-    tooth.className = "tooth";
-    tooth.dataset.index = i;
+    const tooth = makeTooth(i, true);
     tooth.addEventListener("click", () => onToothTap(i));
     lowerTeethEl.appendChild(tooth);
-    toothButtons.push(tooth);
+    toothGroups.push(tooth);
   }
 }
 
@@ -80,12 +128,9 @@ function startRound() {
   trapIndex = Math.floor(Math.random() * LOWER_TEETH);
 
   // Reset visuals on every tooth
-  toothButtons.forEach((tooth) => {
-    tooth.classList.remove("pressed", "trap");
-    tooth.disabled = false;
-  });
+  toothGroups.forEach((tooth) => tooth.classList.remove("pressed", "trap"));
 
-  croc.classList.remove("biting");
+  croc.classList.remove("biting", "ended");
   messageEl.classList.remove("gameover");
   messageEl.textContent = "Tap the teeth… one is a trap!";
   updateScore();
@@ -94,7 +139,7 @@ function startRound() {
 function onToothTap(index) {
   if (gameOver) return;
 
-  const tooth = toothButtons[index];
+  const tooth = toothGroups[index];
   if (tooth.classList.contains("pressed")) return; // already used
 
   sound.unlock(); // first tap also enables audio on mobile
@@ -109,7 +154,6 @@ function onToothTap(index) {
 // Safe tooth: sink it down, score a point, keep playing
 function pressSafeTooth(tooth) {
   tooth.classList.add("pressed");
-  tooth.disabled = true;
   pressedCount++;
   updateScore();
 
@@ -128,8 +172,7 @@ function triggerTrap(tooth) {
   gameOver = true;
   tooth.classList.add("trap");
 
-  croc.classList.add("biting");
-  disableAllTeeth();
+  croc.classList.add("biting", "ended");
 
   messageEl.textContent = "CHOMP! Game Over";
   messageEl.classList.add("gameover");
@@ -144,7 +187,7 @@ function triggerTrap(tooth) {
 // Cleared every safe tooth without hitting the trap
 function winRound() {
   gameOver = true;
-  disableAllTeeth();
+  croc.classList.add("ended");
   messageEl.textContent = "You survived! \u{1F389}";
   sound.win();
   saveBest();
@@ -156,10 +199,6 @@ function winRound() {
 
 function updateScore() {
   scoreEl.textContent = pressedCount;
-}
-
-function disableAllTeeth() {
-  toothButtons.forEach((tooth) => (tooth.disabled = true));
 }
 
 function saveBest() {

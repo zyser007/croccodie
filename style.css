@@ -4,17 +4,15 @@
    =========================================================== */
 
 :root {
-  --green: #38c46a;
-  --green-dark: #1f9c4d;
-  --green-darker: #157a3a;
-  --green-light: #5fe08c;
-  --mouth-red: #d33a3a;
-  --mouth-red-dark: #8c1f1f;
-  --tooth: #fdfdf5;
-  --tooth-shadow: #c9c8b3;
-  --sky-top: #8fd9ff;
-  --sky-bottom: #c9f0ff;
-  --ink: #1f3d2b;
+  /* Muted, lifelike palette */
+  --green: #5f7a36;
+  --green-dark: #455a26;
+  --green-darker: #324518;
+  --green-light: #869a55;
+  --mouth-red: #a32f2f;
+  --sky-top: #9db8c2;
+  --sky-bottom: #cdddd9;
+  --ink: #243018;
 }
 
 * {
@@ -119,179 +117,72 @@ body {
   animation: shake 0.4s ease;
 }
 
-/* Eyes sit on top of the snout */
-.eyes {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  justify-content: center;
-  gap: 18%;
-  margin-bottom: -22px; /* tuck the eyes onto the snout */
-}
-
-.eye {
-  width: 26%;
-  aspect-ratio: 1 / 1;
-  background: radial-gradient(circle at 50% 35%, #fff, #e7f4ec);
-  border: 5px solid var(--green-dark);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.06);
-  transition: transform 0.15s ease;
-}
-
-.pupil {
-  width: 34%;
-  height: 34%;
-  background: #16241b;
-  border-radius: 50%;
-  transform: translateY(10%);
-  transition: all 0.15s ease;
-}
-
-/* Surprised eyes during the bite */
-.croc.biting .eye {
-  transform: scale(0.9);
-}
-.croc.biting .pupil {
-  width: 24%;
-  height: 24%;
-  transform: translateY(0);
-}
-
-/* The head: red interior is the open mouth */
-.jaws {
-  position: relative;
+.croc-svg {
+  display: block;
   width: 100%;
-  aspect-ratio: 1 / 0.92;
-  background: radial-gradient(
-    ellipse at 50% 45%,
-    var(--mouth-red) 55%,
-    var(--mouth-red-dark) 100%
-  );
-  border-radius: 46% 46% 40% 40% / 40% 40% 60% 60%;
-  overflow: hidden;
-  box-shadow: 0 14px 24px rgba(21, 60, 43, 0.25);
+  height: auto;
+  overflow: visible; /* let the shadow + eye mounds spill past the viewBox */
 }
 
-/* Shared green jaw surface */
-.upper-jaw,
-.lower-jaw {
-  position: absolute;
-  left: 0;
-  right: 0;
-  background: linear-gradient(180deg, var(--green-light), var(--green) 55%, var(--green-dark));
+/* Upper jaw / snout drops down to snap the mouth shut */
+#upperJaw {
+  transition: transform 0.13s cubic-bezier(0.5, -0.3, 0.7, 1.35);
 }
-
-/* Upper jaw is the snout. It grows downward to snap shut. */
-.upper-jaw {
-  top: 0;
-  height: 42%;
-  border-radius: 46% 46% 22% 22% / 80% 80% 30% 30%;
-  box-shadow: inset 0 -10px 0 rgba(0, 0, 0, 0.08);
-  /* Snappy close on bite */
-  transition: height 0.13s cubic-bezier(0.5, -0.4, 0.7, 1.3);
-  z-index: 2;
-}
-
-.croc.biting .upper-jaw {
-  height: 71%;
-}
-
-/* Lower jaw is the chin that holds the clickable teeth */
-.lower-jaw {
-  bottom: 0;
-  height: 30%;
-  border-radius: 22% 22% 46% 46% / 30% 30% 70% 70%;
-  box-shadow: inset 0 10px 0 rgba(0, 0, 0, 0.08);
-}
-
-/* Nostrils on the snout */
-.nostrils {
-  position: absolute;
-  top: 16%;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  gap: 16%;
-}
-.nostrils span {
-  width: 10px;
-  height: 14px;
-  background: var(--green-darker);
-  border-radius: 50%;
+.croc.biting #upperJaw {
+  transform: translateY(84px);
 }
 
 /* ---------------- Teeth ---------------- */
-.teeth-row {
-  position: absolute;
-  left: 5%;
-  right: 5%;
-  display: flex;
-  justify-content: center;
-  gap: 2.5%;
-}
-
-/* Upper teeth hang down from the snout (decorative) */
-.upper-teeth {
-  bottom: 0;
-  align-items: flex-start;
-}
-
-/* Lower teeth stick up from the chin (clickable buttons) */
-.lower-teeth {
-  bottom: 6%;
-  align-items: flex-end;
-  z-index: 1;
-}
-
-/* A single tooth */
 .tooth {
-  flex: 1 1 0;
-  max-width: 13%;
-  background: linear-gradient(180deg, var(--tooth), #e9e9d8);
-  border: none;
-  padding: 0;
   cursor: pointer;
-  box-shadow: 0 3px 0 var(--tooth-shadow);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 0.09s ease, filter 0.2s ease;
 }
 
-/* Decorative upper teeth point down (triangle-ish) */
-.upper-teeth .tooth {
-  height: 38px;
-  border-radius: 6px 6px 50% 50%;
+.fang {
+  fill: url(#toothGrad);
+  stroke: #b9b295;
+  stroke-width: 1;
+  transition: fill 0.2s ease;
 }
 
-/* Clickable lower teeth point up, chunky and tactile */
-.lower-teeth .tooth {
-  height: 56px;
-  border-radius: 50% 50% 8px 8px;
-  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.2s ease;
+/* Invisible but tappable hit area over each tooth */
+.tooth .hit {
+  fill: none;
+  pointer-events: all;
 }
 
-/* Tap / hover feedback */
-.lower-teeth .tooth:not(.pressed):active,
-.lower-teeth .tooth:not(.pressed):hover {
-  transform: translateY(3px) scale(1.03);
-  box-shadow: 0 1px 0 var(--tooth-shadow);
+/* Decorative upper teeth never react to taps */
+#upperTeeth .tooth {
+  pointer-events: none;
 }
 
-/* A pressed (safe) tooth sinks into the gum and is dimmed */
-.lower-teeth .tooth.pressed {
-  transform: translateY(34px);
-  box-shadow: none;
-  filter: brightness(0.8) saturate(0.7);
+/* Tap / hover feedback on the clickable lower teeth */
+#lowerTeeth .tooth:not(.pressed):hover,
+#lowerTeeth .tooth:not(.pressed):active {
+  transform: translateY(5px);
+}
+
+/* A pressed (safe) tooth presses down into the gum (shrinks to a nub) and dims */
+#lowerTeeth .tooth.pressed {
+  transform: scaleY(0.16);
+  filter: brightness(0.72) saturate(0.6);
+  pointer-events: none;
   cursor: default;
-  animation: press 0.18s ease;
 }
 
 /* The trap tooth, revealed on game over */
-.lower-teeth .tooth.trap {
-  background: linear-gradient(180deg, #ffd34d, #ff9e2c);
-  box-shadow: 0 3px 0 #c9781b;
+.tooth.trap .fang {
+  fill: url(#trapGrad);
+  stroke: #c9781b;
+}
+
+/* No more taps once the round has ended */
+.croc.ended .tooth,
+.croc.biting .tooth {
+  pointer-events: none;
+  cursor: default;
 }
 
 /* ---------------- Message + Replay ---------------- */
@@ -335,12 +226,6 @@ body {
   40% { transform: translateX(8px) rotate(1.5deg); }
   60% { transform: translateX(-6px) rotate(-1deg); }
   80% { transform: translateX(6px) rotate(1deg); }
-}
-
-@keyframes press {
-  0% { transform: translateY(0); }
-  60% { transform: translateY(40px); }
-  100% { transform: translateY(34px); }
 }
 
 @keyframes pop {
